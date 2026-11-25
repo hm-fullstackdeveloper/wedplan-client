@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -43,38 +44,58 @@ export default function Hero() {
   return (
     <section
       aria-labelledby="hero-heading"
-      className="relative overflow-hidden bg-page"
+      className="relative isolate flex min-h-[620px] items-center overflow-hidden bg-brand-dark sm:min-h-[680px] lg:min-h-[720px]"
     >
+      {/* Full Background Wedding Image */}
+      <Image
+        src="/images/hero-wedding.jpg"
+        alt="Beautiful romantic wedding celebration"
+        fill
+        priority
+        quality={90}
+        sizes="100vw"
+        className="absolute inset-0 -z-20 object-cover object-center"
+      />
+
+      {/* Dark Overlay for Text Readability */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 overflow-hidden"
-      >
-        <div className="absolute -right-32 -top-40 size-[34rem] rounded-full bg-brand-light/75 blur-3xl" />
-        <div className="absolute -bottom-48 -left-32 size-[30rem] rounded-full bg-brand-soft/30 blur-3xl" />
-      </div>
+        className="absolute inset-0 -z-10 bg-gradient-to-r from-black/75 via-black/55 to-black/20"
+      />
 
-      <div className="relative mx-auto grid max-w-7xl gap-12 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-16 lg:px-8 lg:py-16 xl:py-20">
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-gradient-to-t from-black/40 via-transparent to-black/10"
+      />
+
+      {/* Hero Content */}
+      <div className="relative mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-28">
         <motion.div
           initial={reduceMotion ? false : "hidden"}
           animate="visible"
           variants={containerVariants}
-          className="max-w-xl"
+          className="max-w-3xl"
         >
+          {/* Badge */}
           <motion.div variants={itemVariants}>
-            <span className="inline-flex items-center gap-2 rounded-full border border-brand/15 bg-surface/80 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-dark shadow-sm backdrop-blur-sm sm:px-4 sm:tracking-[0.2em]">
-              <Sparkles className="size-3.5 shrink-0 text-brand" aria-hidden="true" />
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white shadow-sm backdrop-blur-md sm:px-4 sm:tracking-[0.2em]">
+              <Sparkles
+                className="size-3.5 shrink-0 text-brand-soft"
+                aria-hidden="true"
+              />
               YOUR DREAM WEDDING STARTS HERE
             </span>
           </motion.div>
 
+          {/* Heading */}
           <motion.h1
             id="hero-heading"
             variants={itemVariants}
-            className="mt-6 text-[2.05rem] font-semibold leading-[1.12] tracking-tight text-text-primary sm:mt-7 sm:text-5xl sm:leading-[1.08] lg:text-[3.25rem] xl:text-[3.75rem]"
+            className="mt-6 text-[2.05rem] font-semibold leading-[1.12] tracking-tight text-white sm:mt-7 sm:text-5xl sm:leading-[1.08] lg:text-[3.75rem] xl:text-[4.25rem]"
           >
             Plan Your{" "}
             <span className="block">
-              <span className="text-brand underline decoration-brand/25 decoration-[0.12em] underline-offset-[0.15em]">
+              <span className="text-brand-soft underline decoration-brand-soft/40 decoration-[0.12em] underline-offset-[0.15em]">
                 Perfect Wedding
               </span>
               ,
@@ -82,15 +103,17 @@ export default function Hero() {
             Without the Stress.
           </motion.h1>
 
+          {/* Description */}
           <motion.p
             variants={itemVariants}
-            className="mt-5 max-w-lg text-pretty text-base leading-7 text-text-secondary sm:mt-6 sm:text-lg sm:leading-8"
+            className="mt-5 max-w-2xl text-pretty text-base leading-7 text-white/85 sm:mt-6 sm:text-lg sm:leading-8"
           >
             Discover trusted wedding professionals, beautiful venues, and
             everything you need to turn your dream wedding into an
             unforgettable celebration.
           </motion.p>
 
+          {/* Buttons */}
           <motion.div
             variants={itemVariants}
             className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center"
@@ -99,7 +122,7 @@ export default function Hero() {
               href="/services"
               className={cn(
                 buttonVariants(),
-                "group h-12 w-full justify-center rounded-full border-transparent bg-brand px-6 text-sm font-semibold text-white shadow-lg shadow-brand/20 transition-all hover:bg-brand-dark hover:shadow-xl focus-visible:ring-brand/30 sm:w-auto",
+                "group h-12 w-full justify-center rounded-full border-transparent bg-brand px-6 text-sm font-semibold text-white shadow-lg shadow-black/20 transition-all hover:bg-brand-dark hover:shadow-xl focus-visible:ring-brand/30 sm:w-auto",
               )}
             >
               Explore Wedding Services
@@ -114,63 +137,28 @@ export default function Hero() {
               title="How It Works section coming soon"
               className={cn(
                 buttonVariants({ variant: "outline" }),
-                "h-12 w-full cursor-default justify-center rounded-full border-border-custom bg-surface/70 px-5 text-sm font-semibold text-text-primary backdrop-blur-sm hover:border-border-custom hover:bg-surface/70 hover:text-text-primary sm:w-auto",
+                "h-12 w-full cursor-default justify-center rounded-full border-white/50 bg-white/10 px-5 text-sm font-semibold text-white backdrop-blur-md hover:border-white/50 hover:bg-white/10 hover:text-white sm:w-auto",
               )}
             >
-              <CirclePlay className="size-4 text-brand" aria-hidden="true" />
+              <CirclePlay className="size-4 text-brand-soft" aria-hidden="true" />
               Discover How It Works
-              <span className="ml-0.5 rounded-full bg-brand-light px-2 py-0.5 text-[10px] font-medium text-brand-dark">
+              <span className="ml-0.5 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-medium text-white">
                 Soon
               </span>
             </span>
           </motion.div>
 
+          {/* Trust Message */}
           <motion.p
             variants={itemVariants}
-            className="mt-6 flex max-w-md items-start gap-2.5 text-sm leading-6 text-text-secondary"
+            className="mt-6 flex max-w-md items-start gap-2.5 text-sm leading-6 text-white/85"
           >
             <ShieldCheck
-              className="mt-0.5 size-4 shrink-0 text-brand"
+              className="mt-0.5 size-4 shrink-0 text-brand-soft"
               aria-hidden="true"
             />
             Find trusted wedding professionals for your special day.
           </motion.p>
-        </motion.div>
-
-        <motion.div
-          initial={
-            reduceMotion ? false : { opacity: 0, y: 24, scale: 0.98 }
-          }
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{
-            duration: reduceMotion ? 0 : 0.85,
-            delay: reduceMotion ? 0 : 0.2,
-            ease: EASE,
-          }}
-          className="relative mx-auto w-full max-w-md lg:ml-auto lg:max-w-[500px]"
-        >
-          <div
-            aria-hidden="true"
-            className="absolute -inset-3 rounded-[2.5rem] border border-brand/15 bg-brand-light/35"
-          />
-
-          <div className="relative rounded-[2rem] border border-white/70 bg-surface p-2 shadow-2xl shadow-brand-dark/15">
-            <div className="relative aspect-[4/5] overflow-hidden rounded-[1.6rem] bg-brand-light">
-              <Image
-                src="/images/hero-wedding.jpg"
-                alt="Bride and groom holding a romantic wedding bouquet in warm evening light"
-                fill
-                preload
-                quality={85}
-                sizes="(min-width: 1024px) 500px, (min-width: 640px) 448px, calc(100vw - 32px)"
-                className="object-cover"
-              />
-              <div
-                aria-hidden="true"
-                className="absolute inset-0 bg-gradient-to-t from-brand-dark/20 via-transparent to-transparent"
-              />
-            </div>
-          </div>
         </motion.div>
       </div>
     </section>
