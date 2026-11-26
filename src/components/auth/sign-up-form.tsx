@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, ImagePlus } from "lucide-react";
 import type { AccountType } from "./account-type-selector";
 import { authClient } from "@/app/lib/auth-client";
+import SocialLoginButtons from "@/components/auth/social-login-buttons";
+
 
 interface SignUpFormProps {
   accountType: AccountType;
@@ -257,25 +259,7 @@ export default function SignUpForm({ accountType }: SignUpFormProps) {
 
       {/* Social Login */}
       <div className="grid grid-cols-2 gap-4">
-        <button
-          type="button"
-          disabled
-          title="Google authentication will be connected later"
-          className="flex items-center justify-center gap-2 rounded-xl border border-border-custom py-3 font-medium text-text-primary opacity-60"
-        >
-          <span className="text-lg font-bold text-blue-600">G</span>
-          Google
-        </button>
-
-        <button
-          type="button"
-          disabled
-          title="GitHub authentication will be connected later"
-          className="flex items-center justify-center gap-2 rounded-xl border border-border-custom py-3 font-medium text-text-primary opacity-60"
-        >
-          <span className="text-lg font-bold">GH</span>
-          GitHub
-        </button>
+        <SocialLoginButtons />
       </div>
     </div>
   );
