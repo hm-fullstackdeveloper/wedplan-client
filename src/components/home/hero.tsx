@@ -44,37 +44,37 @@ export default function Hero() {
   return (
     <section
       aria-labelledby="hero-heading"
-      className="relative isolate flex min-h-[620px] items-center overflow-hidden bg-brand-dark sm:min-h-[680px] lg:min-h-[720px]"
+      className="relative isolate flex min-h-[620px] items-center overflow-hidden bg-brand-dark sm:min-h-[700px] lg:min-h-[760px]"
     >
-      {/* Full Background Wedding Image */}
+      {/* Full-Bleed Wedding Background */}
       <Image
-        src="/images/hero-wedding.jpg"
-        alt="Beautiful romantic wedding celebration"
+        src="/images/hero-wedding-floral.jpg"
+        alt="Elegant bride and groom under a white floral wedding arch"
         fill
         priority
         quality={90}
         sizes="100vw"
-        className="absolute inset-0 -z-20 object-cover object-center"
+        className="absolute inset-0 -z-20 size-full object-cover object-center"
       />
 
-      {/* Dark Overlay for Text Readability */}
+      {/* Warm Gradient Overlay for Text Readability */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-r from-black/75 via-black/55 to-black/20"
+        className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/55 to-black/35 sm:bg-gradient-to-r sm:from-black/80 sm:via-black/45 sm:to-black/10"
       />
 
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-t from-black/40 via-transparent to-black/10"
+        className="absolute inset-0 -z-10 bg-gradient-to-t from-black/55 via-transparent to-transparent"
       />
 
       {/* Hero Content */}
-      <div className="relative mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-28">
+      <div className="relative mx-auto w-full max-w-7xl px-4 py-24 sm:px-6 sm:py-28 lg:px-8 lg:py-32">
         <motion.div
           initial={reduceMotion ? false : "hidden"}
           animate="visible"
           variants={containerVariants}
-          className="max-w-3xl"
+          className="max-w-3xl [text-shadow:0_1px_18px_rgba(0,0,0,0.35)]"
         >
           {/* Badge */}
           <motion.div variants={itemVariants}>
