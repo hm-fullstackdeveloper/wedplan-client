@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
+import { dashboardPath } from "@/lib/roles";
 import { buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -34,6 +35,7 @@ type NavbarUser = {
   name?: string | null;
   email?: string | null;
   image?: string | null;
+  role?: string | null;
 };
 
 function isActivePath(pathname: string, href: string) {
@@ -61,6 +63,10 @@ function getInitials(name?: string | null) {
 
 function getDisplayName(user: NavbarUser) {
   return user.name?.trim() || "WedPlan user";
+}
+
+function getFirstName(user: NavbarUser) {
+  return getDisplayName(user).split(/\s+/)[0];
 }
 
 function BrandLogo({ onClick }: { onClick?: () => void }) {
@@ -231,6 +237,7 @@ function UserMenu({
   onSignOut: () => void;
 }) {
   const displayName = getDisplayName(user);
+  const firstName = getFirstName(user);
 
   return (
     <DropdownMenu>
@@ -239,8 +246,8 @@ function UserMenu({
         className="group flex h-11 items-center gap-2 rounded-full border border-border-custom bg-surface py-1.5 pl-1.5 pr-3 text-left outline-none transition-colors hover:border-brand/30 hover:bg-brand-light/60 focus-visible:border-brand/40 focus-visible:ring-3 focus-visible:ring-brand/15 data-[popup-open]:border-brand/30 data-[popup-open]:bg-brand-light/60"
       >
         <UserAvatar user={user} />
-        <span className="hidden max-w-24 truncate text-sm font-medium text-text-primary md:block">
-          {displayName}
+        <span className="hidden max-w-40 truncate text-sm font-medium text-text-primary md:block">
+          Welcome, {firstName}
         </span>
         <ChevronDown
           className="size-4 text-text-muted transition-transform duration-200 group-data-[popup-open]:rotate-180"
@@ -259,14 +266,14 @@ function UserMenu({
 
         <DropdownMenuGroup>
           <DropdownMenuItem
-            render={<Link href="/dashboard" />}
+            render={<Link href={dashboardPath(user.role)} />}
             className="gap-2.5 rounded-xl px-3 py-2.5 text-text-secondary focus:bg-brand-light focus:text-brand-dark"
           >
             <LayoutDashboard className="text-brand" aria-hidden="true" />
             Dashboard
           </DropdownMenuItem>
           <DropdownMenuItem
-            render={<Link href="/dashboard/profile" />}
+            render={<Link href="/profile" />}
             className="gap-2.5 rounded-xl px-3 py-2.5 text-text-secondary focus:bg-brand-light focus:text-brand-dark"
           >
             <Settings className="text-brand" aria-hidden="true" />
@@ -327,30 +334,22 @@ function MobileMenu({
             <UserSummary user={user} className="mb-3" />
 
             <Link
-              href="/dashboard"
+              href={dashboardPath(user.role)}
               onClick={onClose}
-              aria-current={
-                isActivePath(pathname, "/dashboard") ? "page" : undefined
-              }
-              className={cn(
-                "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium",
-                isActivePath(pathname, "/dashboard")
-                  ? "bg-brand-light text-brand-dark"
-                  : "text-text-secondary hover:bg-brand-light/60 hover:text-brand-dark",
-              )}
+              className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-text-secondary hover:bg-brand-light/60 hover:text-brand-dark"
             >
               <LayoutDashboard className="size-4 text-brand" aria-hidden="true" />
               Dashboard
             </Link>
             <Link
-              href="/dashboard/profile"
+              href="/profile"
               onClick={onClose}
               aria-current={
-                isActivePath(pathname, "/dashboard/profile") ? "page" : undefined
+                isActivePath(pathname, "/profile") ? "page" : undefined
               }
               className={cn(
                 "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium",
-                isActivePath(pathname, "/dashboard/profile")
+                isActivePath(pathname, "/profile")
                   ? "bg-brand-light text-brand-dark"
                   : "text-text-secondary hover:bg-brand-light/60 hover:text-brand-dark",
               )}
