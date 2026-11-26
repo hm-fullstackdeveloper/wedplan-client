@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# user-uploaded profile pictures (runtime-এ তৈরি হয়)
+/public/uploads/
