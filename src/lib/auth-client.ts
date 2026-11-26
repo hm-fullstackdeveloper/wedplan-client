@@ -1,10 +1,10 @@
-import { createAuthClient } from "better-auth/react";
-
-/**
- * Single Better Auth client for the app.
- *
- * Better Auth reads NEXT_PUBLIC_AUTH_URL automatically when it is set.
- * Until the auth API route is added, `useSession` simply resolves to `null`
- * and the Navbar shows its public state.
- */
-export const authClient = createAuthClient();
+// এই ফাইলটা আগে একটা fake stub ছিল (সবসময় data: null return করত)।
+// এখন আসল Better Auth client-টাই এখান থেকে re-export করা হচ্ছে, যাতে
+// Navbar আর Profile page দুটোই একই session দেখতে পায়।
+export {
+  authClient,
+  signIn,
+  signUp,
+  signOut,
+  useSession,
+} from "@/app/lib/auth-client";

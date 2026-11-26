@@ -3,17 +3,23 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, ImagePlus } from "lucide-react";
 import type { AccountType } from "./account-type-selector";
+import { authClient } from "@/app/lib/auth-client";
 
 interface SignUpFormProps {
   accountType: AccountType;
 }
 
 export default function SignUpForm({ accountType }: SignUpFormProps) {
+  const router = useRouter();
+
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -31,60 +37,63 @@ export default function SignUpForm({ accountType }: SignUpFormProps) {
     }
 
     const imageUrl = URL.createObjectURL(file);
+
     setImagePreview((previous) => {
       if (previous) URL.revokeObjectURL(previous);
       return imageUrl;
     });
   };
 
- 
-const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  console.log("========== SIGN UP STARTED ==========");
+    setError("");
 
-  const form = e.currentTarget;
-  const formData = new FormData(form);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
 
-  const name = formData.get("name");
-  const email = formData.get("email");
-  const password = formData.get("password");
-  const confirmPassword = formData.get("confirmPassword");
-  const profileImage = formData.get("profileImage");
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
 
-  console.log("Selected Account Type:", accountType);
+    if (password !== confirmPassword) {
+      setError("Passwords do not match!");
+      return;
+    }
 
-  console.log("Form Data:", {
-    name,
-    email,
-    profileImage:
-      profileImage instanceof File && profileImage.size > 0
-        ? profileImage.name
-        : "No image selected",
-  });
+    try {
+      setLoading(true);
 
-  // Password Validation
-  if (password !== confirmPassword) {
-    console.error("SIGN UP FAILED: Passwords do not match!");
-    alert("Passwords do not match!");
-    return;
-  }
+      const { error: signUpError } = await authClient.signUp.email({
+        name,
+        email,
+        password,
+        role: accountType,
+      });
 
-  console.log("Password Validation: Successful");
+      if (signUpError) {
+        setError(signUpError.message || "Registration failed!");
+        return;
+      }
 
-  console.log("SIGN UP FORM DATA COLLECTED SUCCESSFULLY");
+      router.push("/sign-in");
+      router.refresh();
+    } catch (error) {
+      console.error("Sign Up Error:", error);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  console.log("========== SIGN UP COMPLETED ==========");
-};
-
-    
-  
   return (
     <div className="mt-8">
       <div className="mb-6 text-center">
         <h2 className="text-xl font-bold text-text-primary">
           Create {accountType === "vendor" ? "Vendor" : "Customer"} Account
         </h2>
+
         <p className="mt-1 text-sm text-text-secondary">
           Fill in your information to get started.
         </p>
@@ -125,6 +134,7 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
           >
             Upload Profile Picture
           </label>
+
           <p className="mt-1 text-xs text-text-muted">
             JPG, PNG or WebP (Max 5MB)
           </p>
@@ -135,6 +145,7 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
           <label className="mb-2 block text-sm font-medium text-text-primary">
             Full Name
           </label>
+
           <input
             name="name"
             type="text"
@@ -151,6 +162,7 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
           <label className="mb-2 block text-sm font-medium text-text-primary">
             Email Address
           </label>
+
           <input
             name="email"
             type="email"
@@ -166,6 +178,7 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
           <label className="mb-2 block text-sm font-medium text-text-primary">
             Password
           </label>
+
           <div className="relative">
             <input
               name="password"
@@ -176,6 +189,7 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
               autoComplete="new-password"
               className="w-full rounded-xl border border-border-custom bg-surface px-4 py-3 pr-12 outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
+
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
@@ -192,6 +206,7 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
           <label className="mb-2 block text-sm font-medium text-text-primary">
             Confirm Password
           </label>
+
           <div className="relative">
             <input
               name="confirmPassword"
@@ -202,6 +217,7 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
               autoComplete="new-password"
               className="w-full rounded-xl border border-border-custom bg-surface px-4 py-3 pr-12 outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
+
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -217,12 +233,18 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
           </div>
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <p className="text-sm text-red-500">{error}</p>
+        )}
+
         {/* Create Account */}
         <button
           type="submit"
-          className="w-full rounded-xl bg-brand px-5 py-3 font-semibold text-white transition hover:bg-brand-dark"
+          disabled={loading}
+          className="w-full rounded-xl bg-brand px-5 py-3 font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Create Account
+          {loading ? "Creating Account..." : "Create Account"}
         </button>
       </form>
 
@@ -241,19 +263,19 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
           title="Google authentication will be connected later"
           className="flex items-center justify-center gap-2 rounded-xl border border-border-custom py-3 font-medium text-text-primary opacity-60"
         >
-          <span className="font-bold text-lg text-blue-600">G</span>
+          <span className="text-lg font-bold text-blue-600">G</span>
           Google
         </button>
 
-<button
-  type="button"
-  disabled
-  title="GitHub authentication will be connected later"
-  className="flex items-center justify-center gap-2 rounded-xl border border-border-custom py-3 font-medium text-text-primary opacity-60"
->
-  <span className="text-lg font-bold">GH</span>
-  GitHub
-</button>
+        <button
+          type="button"
+          disabled
+          title="GitHub authentication will be connected later"
+          className="flex items-center justify-center gap-2 rounded-xl border border-border-custom py-3 font-medium text-text-primary opacity-60"
+        >
+          <span className="text-lg font-bold">GH</span>
+          GitHub
+        </button>
       </div>
     </div>
   );

@@ -1,18 +1,21 @@
 
 "use client";
 
-import { UserRound, Store } from "lucide-react";
+import { ShieldCheck, UserRound, Store } from "lucide-react";
 
-export type AccountType = "customer" | "vendor";
+export type AccountType = "customer" | "vendor" | "admin";
 
 interface AccountTypeSelectorProps {
   value: AccountType | null;
   onChange: (value: AccountType) => void;
+  /** Admin login option শুধু Sign In-এ দেখাবে — Sign Up-এ নয়। */
+  includeAdmin?: boolean;
 }
 
 export default function AccountTypeSelector({
   value,
   onChange,
+  includeAdmin = false,
 }: AccountTypeSelectorProps) {
   const accountTypes = [
     {
@@ -27,10 +30,26 @@ export default function AccountTypeSelector({
       description: "Manage and offer your services",
       icon: Store,
     },
+    ...(includeAdmin
+      ? [
+          {
+            value: "admin" as const,
+            title: "Admin",
+            description: "Manage the WedPlan platform",
+            icon: ShieldCheck,
+          },
+        ]
+      : []),
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div
+      className={
+        includeAdmin
+          ? "grid grid-cols-1 gap-4 sm:grid-cols-3"
+          : "grid grid-cols-1 gap-4 sm:grid-cols-2"
+      }
+    >
       {accountTypes.map((account) => {
         const Icon = account.icon;
         const isSelected = value === account.value;

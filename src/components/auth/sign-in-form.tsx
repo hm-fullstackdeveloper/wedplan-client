@@ -2,52 +2,85 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import type { AccountType } from "./account-type-selector";
+import { authClient } from "@/app/lib/auth-client";
+import { dashboardPath } from "@/lib/roles";
+
+const TITLES: Record<AccountType, string> = {
+  customer: "Customer",
+  vendor: "Vendor",
+  admin: "Admin",
+};
 
 interface SignInFormProps {
   accountType: AccountType;
 }
 
 export default function SignInForm({ accountType }: SignInFormProps) {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   // Sign In Form Submit
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
 
-    console.log("========== SIGN IN STARTED ==========");
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
 
-    console.log("Selected Account Type:", accountType);
+  setError("");
 
-    const form = e.currentTarget;
-    const formData = new FormData(form);
+  const formData = new FormData(e.currentTarget);
 
-    const email = formData.get("email");
-    const password = formData.get("password");
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
 
-    console.log("Sign In Form Data:", {
-      email,
-      accountType,
-      rememberMe,
-    });
+  try {
+    setLoading(true);
 
-    if (!email || !password) {
-      console.error("Sign In Failed: Email or Password Missing");
+    const { data, error: signInError } = await authClient.signIn.email(
+      {
+        email,
+        password,
+        rememberMe,
+      },
+      {
+        headers: {
+          // Server এই header দেখে DB-র role-এর সাথে মিলিয়ে নেবে।
+          "x-account-type": accountType,
+        },
+      },
+    );
+
+    if (signInError) {
+      console.error("Sign In Error:", signInError);
+      setError(signInError.message || "Invalid email or password!");
       return;
     }
 
-    console.log("Form Validation Successful");
-    console.log("Sign In Form Submitted Successfully");
-    console.log("========== SIGN IN COMPLETED ==========");
-  };
+    // Redirect role সবসময় server-এর response থেকে আসে — client state নয়।
+    const verifiedRole = (data?.user as { role?: string | null } | undefined)
+      ?.role;
+
+    router.push(dashboardPath(verifiedRole));
+    router.refresh();
+
+  } catch (error) {
+    console.error("Sign In Error:", error);
+    setError("Something went wrong. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="mt-8">
       <div className="mb-6 text-center">
         <h2 className="text-xl font-bold text-text-primary">
-          {accountType === "vendor" ? "Vendor" : "Customer"} Sign In
+          {TITLES[accountType]} Sign In
         </h2>
 
         <p className="mt-1 text-sm text-text-secondary">
@@ -113,12 +146,18 @@ export default function SignInForm({ accountType }: SignInFormProps) {
           </label>
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <p className="text-sm text-red-500">{error}</p>
+        )}
+
         {/* Sign In Button */}
         <button
           type="submit"
-          className="w-full rounded-xl bg-brand px-5 py-3 font-semibold text-white transition hover:bg-brand-dark"
+          disabled={loading}
+          className="w-full rounded-xl bg-brand px-5 py-3 font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Sign In
+          {loading ? "Signing In..." : "Sign In"}
         </button>
       </form>
 
@@ -135,7 +174,6 @@ export default function SignInForm({ accountType }: SignInFormProps) {
 
       {/* Social Login */}
       <div className="grid grid-cols-2 gap-4">
-        {/* Google */}
         <button
           type="button"
           disabled
@@ -146,7 +184,6 @@ export default function SignInForm({ accountType }: SignInFormProps) {
           Google
         </button>
 
-        {/* GitHub */}
         <button
           type="button"
           disabled

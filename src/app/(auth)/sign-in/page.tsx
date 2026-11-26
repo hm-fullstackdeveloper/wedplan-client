@@ -30,6 +30,7 @@ export default function SignInPage() {
         <AccountTypeSelector
           value={accountType}
           onChange={setAccountType}
+          includeAdmin
         />
 
         {accountType && <SignInForm accountType={accountType} />}
