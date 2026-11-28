@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ImagePlus, Loader2, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 const CATEGORIES = [
   "Wedding Hall",
@@ -73,11 +74,13 @@ export function ServiceForm({
       for (const file of Array.from(files)) {
         if (!file.type.startsWith("image/")) {
           setError("Only image files are allowed.");
+          toast.error("Only image files are allowed.");
           continue;
         }
 
         if (file.size > 5 * 1024 * 1024) {
           setError("Each image must be smaller than 5MB.");
+          toast.error("Each image must be smaller than 5MB.");
           continue;
         }
 
@@ -95,7 +98,9 @@ export function ServiceForm({
         };
 
         if (!response.ok || !data.url) {
-          setError(data.error || "Image upload failed.");
+          const message = data.error || "Image upload failed.";
+          setError(message);
+          toast.error(message);
           continue;
         }
 
@@ -107,9 +112,15 @@ export function ServiceForm({
           ...previous,
           images: [...previous.images, ...uploaded],
         }));
+        toast.success(
+          uploaded.length === 1
+            ? "Image uploaded."
+            : `${uploaded.length} images uploaded.`,
+        );
       }
     } catch {
       setError("Image upload failed. Please try again.");
+      toast.error("Image upload failed. Please try again.");
     } finally {
       setUploading(false);
 
@@ -183,21 +194,26 @@ export function ServiceForm({
       };
 
       if (!response.ok) {
-        setError(data.error || "Could not save this service.");
+        const message = data.error || "Could not save this service.";
+        setError(message);
+        toast.error(message);
         return;
       }
 
-      setMessage(
+      const successMessage =
         data.message ||
-          (mode === "add"
-            ? "Service submitted for admin approval."
-            : "Service updated successfully."),
-      );
+        (mode === "add"
+          ? "Service submitted for admin approval."
+          : "Service updated successfully.");
+
+      setMessage(successMessage);
+      toast.success(successMessage);
 
       router.push("/vendor/services");
       router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setSaving(false);
     }
