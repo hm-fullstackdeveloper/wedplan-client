@@ -46,6 +46,11 @@ function asDateString(value: unknown): string {
   return String(value);
 }
 
+/** ইউজারের টাইপ করা text সরাসরি regex হিসেবে ব্যবহার না করার জন্য। */
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export type BookingRow = {
   id: string;
   status: string;
@@ -254,6 +259,35 @@ function mapService(service: Doc, vendor?: Doc): ServiceRow {
     vendorBusinessName: asString(vendor?.businessName),
     vendorEmail: asString(vendor?.email),
   };
+}
+
+/**
+ * একাধিক service-এর vendor একটিই query-তে নেওয়া হয় — প্রতিটি service-র
+ * জন্য আলাদা query করা হয় না (N+1 এড়াতে)।
+ */
+async function mapServicesWithVendors(services: Doc[]): Promise<ServiceRow[]> {
+  if (services.length === 0) {
+    return [];
+  }
+
+  const vendorIds = services
+    .map((service) => toObjectId(String(service.vendorId ?? "")))
+    .filter((id): id is NonNullable<typeof id> => id !== null);
+
+  const vendors = vendorIds.length
+    ? await usersCollection().find({ _id: { $in: vendorIds } }).toArray()
+    : [];
+
+  const vendorMap = new Map(
+    vendors.map((vendor) => [String(vendor._id), vendor]),
+  );
+
+  return services.map((service) =>
+    mapService(
+      service,
+      vendorMap.get(String(service.vendorId ?? "")) as Doc | undefined,
+    ),
+  );
 }
 
 export async function getVendorServices(vendorId: string) {
@@ -480,4 +514,131 @@ export async function getAdminTransactions(): Promise<TransactionRow[]> {
       createdAt: asDateString(transaction.createdAt),
     };
   });
+}
+
+
+export async function getLatestServices() {
+  const services = await servicesCollection()
+    .find({ status: "approved", isActive: true })
+    .sort({ createdAt: -1 })
+    .limit(6)
+    .toArray();
+
+  return mapServicesWithVendors(services as Doc[]);
+}
+
+export type BrowseServiceFilters = {
+  search?: string;
+  category?: string;
+  location?: string;
+  sort?: string;
+};
+
+/**
+ * Browse Services — শুধু approved ও active service।
+ * সব filters একসাথে একটি query-তে যায়, তাই একসাথে ব্যবহার করলেও ফল সঠিক।
+ * ইচ্ছাকৃত কোনো limit নেই — project-এ আগে থেকে pagination নেই।
+ */
+export async function getBrowseServices(filters: BrowseServiceFilters = {}) {
+  const query: Record<string, unknown> = {
+    status: "approved",
+    isActive: true,
+  };
+
+  const search = filters.search?.trim();
+  if (search) {
+    query.serviceName = { $regex: escapeRegExp(search), $options: "i" };
+  }
+
+  const category = filters.category?.trim();
+  if (category) {
+    query.category = category;
+  }
+
+  const location = filters.location?.trim();
+  if (location) {
+    query.location = { $regex: escapeRegExp(location), $options: "i" };
+  }
+
+  const sort: Record<string, 1 | -1> =
+    filters.sort === "price-asc"
+      ? { price: 1 }
+      : filters.sort === "price-desc"
+        ? { price: -1 }
+        : { createdAt: -1 };
+
+  const services = await servicesCollection().find(query).sort(sort).toArray();
+
+  return mapServicesWithVendors(services as Doc[]);
+}
+
+/** Filter-এর জন্য category তাকলে DB-র নিজের values থেকেই আসে — নতুন কিছু তৈরি হয় না। */
+export async function getBrowseCategories(): Promise<string[]> {
+  const values = await servicesCollection().distinct("category", {
+    status: "approved",
+    isActive: true,
+  });
+
+  return Array.from(
+    new Set(
+      values
+        .filter(
+          (value): value is string =>
+            typeof value === "string" && !!value.trim(),
+        )
+        .map((value) => value.trim()),
+    ),
+  ).sort((a, b) => a.localeCompare(b));
+}
+
+export type ServiceDetails = {
+  service: ServiceRow;
+  vendor: {
+    id: string;
+    name: string;
+    businessName: string;
+    email: string;
+    image: string;
+  };
+};
+
+/**
+ * Service Details — শুধু approved ও active service দেখানো যাবে।
+ * Vendor-এর শুধু নিরাপদ, public তথ্যই ফেরত দেওয়া হয়
+ * (password/token/credential কখনো অন্তর্ভুক্ত হয় না)।
+ */
+export async function getServiceDetails(
+  serviceId: string,
+): Promise<ServiceDetails | null> {
+  const oid = toObjectId(serviceId);
+
+  if (!oid) {
+    return null;
+  }
+
+  const service = await servicesCollection().findOne({
+    _id: oid,
+    status: "approved",
+    isActive: true,
+  });
+
+  if (!service) {
+    return null;
+  }
+
+  const vendorOid = toObjectId(String(service.vendorId ?? ""));
+  const vendor = vendorOid
+    ? await usersCollection().findOne({ _id: vendorOid })
+    : null;
+
+  return {
+    service: mapService(service as Doc, (vendor ?? undefined) as Doc | undefined),
+    vendor: {
+      id: String(service.vendorId ?? ""),
+      name: asString(vendor?.name, "Vendor"),
+      businessName: asString(vendor?.businessName),
+      email: asString(vendor?.email),
+      image: asString(vendor?.image),
+    },
+  };
 }
