@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
+import toast from "react-hot-toast";
 
 export function UpgradeButton({ disabled }: { disabled?: boolean }) {
   const [loading, setLoading] = useState(false);
@@ -26,16 +27,20 @@ export function UpgradeButton({ disabled }: { disabled?: boolean }) {
       };
 
       if (!response.ok || !data.url) {
-        setError(
+        const message =
           data.error ||
-            "Checkout is not available right now. Please try again later.",
-        );
+          "Checkout is not available right now. Please try again later.";
+        setError(message);
+        toast.error(message);
         return;
       }
 
+      toast.success("Redirecting to secure checkout...");
       window.location.href = data.url;
     } catch {
-      setError("Something went wrong. Please try again.");
+      const message = "Something went wrong. Please try again.";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
