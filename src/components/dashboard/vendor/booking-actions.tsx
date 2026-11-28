@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Loader2, X } from "lucide-react";
+import toast from "react-hot-toast";
 
 export function BookingActions({ bookingId }: { bookingId: string }) {
   const router = useRouter();
@@ -38,13 +39,22 @@ export function BookingActions({ bookingId }: { bookingId: string }) {
       };
 
       if (!response.ok) {
-        setError(data.error || "Could not update this booking.");
+        const message = data.error || "Could not update this booking.";
+        setError(message);
+        toast.error(message);
         return;
       }
 
+      toast.success(
+        action === "accept"
+          ? "Booking accepted."
+          : "Booking rejected.",
+      );
       router.refresh();
     } catch {
-      setError("Something went wrong. Please try again.");
+      const message = "Something went wrong. Please try again.";
+      setError(message);
+      toast.error(message);
     } finally {
       setPendingAction(null);
     }

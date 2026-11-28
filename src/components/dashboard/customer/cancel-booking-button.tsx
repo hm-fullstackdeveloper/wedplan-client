@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, XCircle } from "lucide-react";
+import toast from "react-hot-toast";
 
 export function CancelBookingButton({ bookingId }: { bookingId: string }) {
   const router = useRouter();
@@ -37,13 +38,18 @@ export function CancelBookingButton({ bookingId }: { bookingId: string }) {
       };
 
       if (!response.ok) {
-        setError(data.error || "Could not cancel this booking.");
+        const message = data.error || "Could not cancel this booking.";
+        setError(message);
+        toast.error(message);
         return;
       }
 
+      toast.success("Booking cancelled.");
       router.refresh();
     } catch {
-      setError("Something went wrong. Please try again.");
+      const message = "Something went wrong. Please try again.";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
