@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "react-hot-toast";
 
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
@@ -31,6 +32,29 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Navbar />
         {children}
         <Footer />
+
+        {/* পুরো app-এ একটাই toast provider (react-hot-toast)। */}
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              borderRadius: "14px",
+              border: "1px solid var(--color-border)",
+              background: "var(--color-popover)",
+              color: "var(--color-popover-foreground)",
+              fontSize: "14px",
+              boxShadow: "0 10px 30px rgba(53, 43, 45, 0.14)",
+              padding: "10px 16px",
+            },
+            success: {
+              iconTheme: { primary: "var(--color-success)", secondary: "#fff" },
+            },
+            error: {
+              iconTheme: { primary: "var(--color-danger)", secondary: "#fff" },
+            },
+          }}
+        />
       </body>
     </html>
   );
