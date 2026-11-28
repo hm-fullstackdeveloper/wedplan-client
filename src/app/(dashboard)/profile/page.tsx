@@ -15,6 +15,7 @@ import {
 
 import { authClient, useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
+import toast from "react-hot-toast";
 
 const ROLE_LABELS: Record<string, string> = {
   customer: "Customer",
@@ -85,16 +86,20 @@ export default function ProfilePage() {
       });
 
       if (updateError) {
-        setError(updateError.message || "Could not update your name.");
+        const message = updateError.message || "Could not update your name.";
+        setError(message);
+        toast.error(message);
         return;
       }
 
       await refetch();
       setIsEditingName(false);
       setMessage("Name updated successfully.");
+      toast.success("Name updated successfully.");
     } catch (err) {
       console.error("Update name failed:", err);
       setError("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setSavingName(false);
     }
@@ -140,7 +145,9 @@ export default function ProfilePage() {
       };
 
       if (!response.ok || !result.url) {
-        setError(result.error || "Image upload failed.");
+        const message = result.error || "Image upload failed.";
+        setError(message);
+        toast.error(message);
         return;
       }
 
@@ -149,15 +156,19 @@ export default function ProfilePage() {
       });
 
       if (updateError) {
-        setError(updateError.message || "Could not save your picture.");
+        const message = updateError.message || "Could not save your picture.";
+        setError(message);
+        toast.error(message);
         return;
       }
 
       await refetch();
       setMessage("Profile picture updated.");
+      toast.success("Profile picture updated.");
     } catch (err) {
       console.error("Image upload failed:", err);
       setError("Something went wrong while uploading.");
+      toast.error("Something went wrong while uploading.");
     } finally {
       setUploadingImage(false);
     }
